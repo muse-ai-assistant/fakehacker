@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>假装黑客 · Fake Hacker</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#000000">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#33ff33;font-family:'Courier New',Consolas,Menlo,monospace;overflow:hidden}
+#intro{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;text-align:center;padding:24px}
+#intro h1{font-size:2.2rem;letter-spacing:.3em;margin-bottom:12px;text-shadow:0 0 18px #33ff33}
+#intro .sub{color:#1a8a1a;margin-bottom:32px;letter-spacing:.15em}
+#intro .how{max-width:560px;color:#7dff7d;line-height:2;font-size:.95rem;margin-bottom:36px}
+#intro .how b{color:#33ff33}
+#go{background:transparent;border:2px solid #33ff33;color:#33ff33;font-family:inherit;font-size:1.2rem;padding:14px 48px;cursor:pointer;letter-spacing:.2em;box-shadow:0 0 16px rgba(51,255,51,.35);transition:.2s}
+#go:hover{background:#33ff33;color:#000;box-shadow:0 0 32px rgba(51,255,51,.7)}
+#term{display:none;position:fixed;inset:0;background:#000;padding:18px 16px 40px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;font-size:15px;line-height:1.55;color:#33ff33;text-shadow:0 0 6px rgba(51,255,51,.6)}
+#hint{position:fixed;top:10px;right:14px;font-size:12px;color:#1a8a1a;z-index:10;user-select:none}
+#hint button{background:transparent;border:1px solid #1a8a1a;color:#1a8a1a;font-family:inherit;font-size:12px;padding:4px 10px;margin-left:8px;cursor:pointer}
+#cursor{display:inline-block;width:9px;height:18px;background:#33ff33;vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#egg{display:none;position:fixed;inset:0;background:#000;z-index:20;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#egg .big{font-size:3rem;letter-spacing:.25em;color:#33ff33;text-shadow:0 0 30px #33ff33;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.06);text-shadow:0 0 60px #33ff33}}
+#egg .small{margin-top:24px;color:#1a8a1a;letter-spacing:.2em}
+#egg button{margin-top:36px;background:transparent;border:1px solid #33ff33;color:#33ff33;font-family:inherit;padding:10px 32px;cursor:pointer;letter-spacing:.2em}
+.scan{color:#7dff7d}.warn{color:#ffcc00}.ok{color:#33ff66}
+@media(max-width:600px){#term{font-size:13px}#egg .big{font-size:2rem}}
+</style>
+</head>
+<body>
+<div id="intro">
+  <h1>&gt;_ 假装黑客</h1>
+  <div class="sub">FAKE HACKER TYPER</div>
+  <div class="how">
+    进入终端后，<b>随便敲键盘</b>，屏幕会自动输出黑客代码。<br>
+    敲满 <b>200</b> 次，触发神秘彩蛋。<br>
+    按 <b>ESC</b> 或点右上角按钮随时退出。<br><br>
+    建议：全屏 + 关灯 + 面无表情，效果最佳。
+  </div>
+  <button id="go">进入装 X 模式</button>
+</div>
+<div id="hint" style="display:none">按 ESC 退出装 X 模式<button id="quit">退出</button></div>
+<div id="term"></div>
+<div id="egg">
+  <div class="big">ACCESS GRANTED</div>
+  <div class="small">ROOT 权限已获取 · 你就是传奇</div>
+  <button id="again">继续装 X</button>
+</div>
+<script>
+// —— 假代码池 ——
+const CODE=[
+"$ nmap -sS -p- 192.168.1.0/24",
+"[+] 扫描中... 发现 47 台存活主机",
+"$ ssh root@10.0.0.1 -p 2222",
+"[+] SSH 握手成功，尝试暴力破解...",
+"[*] 字典加载: rockyou.txt (14,344,391 条)",
+"[+] 密码命中! root : 5up3r_s3cr3t!!",
+"$ whoami && id",
+"uid=0(root) gid=0(root) groups=0(root)",
+"$ sqlmap -u \"http://target/login.php?id=1\" --dbs",
+"[+] 注入点确认: boolean-based blind",
+"[*] 正在拖库: users (12,847 条记录)...",
+"[=============>          ] 61%",
+"0x7fff5fbff8c0:  48 89 e5 41 57 41 56 49 89 d6 41 55 49 89 f5",
+"0x7fff5fbff8d0:  41 54 53 48 83 ec 38 48 8b 05 ce 2b 00 00",
+"$ hydra -l admin -P dict.txt ssh://192.168.1.1",
+"[22][ssh] host: 192.168.1.1   login: admin   password: qwerty123",
+"[+] 1 of 1 target successfully completed",
+"$ msfconsole -q",
+"msf6 > use exploit/multi/handler",
+"msf6 exploit(handler) > set PAYLOAD windows/meterpreter/reverse_tcp",
+"[*] Started reverse TCP handler on 0.0.0.0:4444",
+"[*] Sending stage (200774 bytes) to 10.0.0.23",
+"[+] Meterpreter session 1 opened",
+"$ tcpdump -i eth0 -n port 443 | grep -i 'key'",
+"12:04:31.882 IP 10.0.0.23.54321 > 93.184.216.34.443: Flags [P.]",
+"[+] 捕获 TLS 握手，提取会话密钥...",
+"$ python3 decrypt.py --key extracted.key --in dump.bin",
+"[+] AES-256 解密中...",
+"[====================>] 98%",
+"[+] 解密完成! 输出: /tmp/loot/secrets.txt",
+"$ cat /tmp/loot/secrets.txt",
+"DB_PASSWORD=Pr0d_S3cret_2026!",
+"API_KEY=sk-live-7f3a9c2e1b4d8a0f",
+"$ traceroute -m 30 darknet.node",
+" 3  10.20.30.1  12.4 ms",
+" 7  185.220.101.4  89.2 ms  [TOR 出口]",
+"12  45.155.204.9  143.7 ms  [目标]",
+"[+] 跳板链建立: 7 层代理",
+"$ ./rootkit --install --stealth",
+"[+] 内核模块注入成功",
+"[+] 日志清理完成，痕迹已抹除",
+"$ netstat -tulpn | grep LISTEN",
+"tcp  0.0.0.0:31337  0.0.0.0:*  LISTEN  backdoor",
+"[+] 后门端口 31337 已开启",
+"$ john --wordlist=rockyou.txt hash.txt",
+"Loaded 1 password hash (sha512crypt)",
+"admin123         (?)",
+"1 password hash cracked, 0 left",
+"$ aircrack-ng -w dict.txt -b AA:BB:CC:DD:EE:FF capture.cap",
+"[+] KEY FOUND! [ P@ssw0rd2026 ]",
+"$ dd if=/dev/sda of=/tmp/image.dd bs=4M status=progress",
+"8589934592 bytes copied, 12.4 s, 692 MB/s",
+"[+] 磁盘镜像完成，正在取证分析...",
+"$ strings /tmp/image.dd | grep -i 'password' | head -5",
+"[+] 发现 5 处凭证残留",
+"$ openssl s_client -connect bank.target:443",
+"[*] 证书链验证: 自签名 (可疑!)",
+"[+] 中间人攻击就绪",
+"$ ./exploit.py --target 10.0.0.1 --cve CVE-2026-1337",
+"[*] 发送 payload...",
+"[+] 远程代码执行成功! 获得 shell",
+"$ rm -rf /var/log/* && history -c",
+"[+] 痕迹清理完毕，功成身退",
+"> 正在上传战利品到暗网服务器...",
+"[====================>] 100%",
+"[+] 任务完成。记住: 你什么都没看见。"
+];
+let pos=0,chars=0,idx=0,hits=0,eggShown=false;
+const term=document.getElementById('term');
+function typeChunk(){
+  if(eggShown)return;
+  // 每次敲击输出 2-5 个字符
+  let n=2+Math.floor(Math.random()*4);
+  let html='';
+  while(n-->0){
+    if(idx>=CODE[pos].length){pos=(pos+1)%CODE.length;idx=0;html+='\n';continue}
+    html+=escapeHtml(CODE[pos][idx++]);
+  }
+  term.insertAdjacentHTML('beforeend',html);
+  term.scrollTop=term.scrollHeight;
+  // 保持光标在末尾
+  let c=document.getElementById('cursor');if(c)c.remove();
+  term.insertAdjacentHTML('beforeend','<span id="cursor"></span>');
+}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function enter(){
+  document.getElementById('intro').style.display='none';
+  document.getElementById('term').style.display='block';
+  document.getElementById('hint').style.display='block';
+  term.innerHTML='<span class="ok">root@kali</span>:<span class="warn">~</span># <span id="cursor"></span>\n';
+  document.addEventListener('keydown',onKey);
+}
+function exit(){
+  document.removeEventListener('keydown',onKey);
+  document.getElementById('term').style.display='none';
+  document.getElementById('hint').style.display='none';
+  document.getElementById('egg').style.display='none';
+  document.getElementById('intro').style.display='flex';
+  hits=0;eggShown=false;term.innerHTML='';
+}
+function onKey(e){
+  if(e.key==='Escape'){exit();return}
+  e.preventDefault();
+  if(eggShown)return;
+  hits++;
+  typeChunk();
+  if(hits>=200){
+    eggShown=true;
+    const egg=document.getElementById('egg');
+    egg.style.display='flex';
+  }
+}
+document.getElementById('go').onclick=enter;
+document.getElementById('quit').onclick=exit;
+document.getElementById('again').onclick=()=>{document.getElementById('egg').style.display='none';hits=0;eggShown=false};
+// 触屏：点一下也算敲击
+document.getElementById('term').addEventListener('touchstart',e=>{e.preventDefault();onKey({key:'a',preventDefault(){}})});
+// 注册 SW
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
